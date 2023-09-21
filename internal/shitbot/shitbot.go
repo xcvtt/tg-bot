@@ -10,20 +10,20 @@ import (
 	"tgbot/models"
 )
 
-func getUserById(r users.Repository, userId int64) (*models.User, bool) {
+func getUserById(r users.Repository, userId int64) *models.User {
 	u, err := r.GetById(userId)
 
 	if err != nil {
-		return u, true
+		return nil
 	}
 
-	return nil, false
+	return u
 }
 
-func tryShit(r users.Repository, userInfo *tgbotapi.User) string {
-	usr, ok := getUserById(r, userInfo.ID)
+func tryShit(r users.Repository, userInfo *tgbotapi.User, ch chan string) {
+	usr := getUserById(r, userInfo.ID)
 
-	if !ok {
+	if usr == nil {
 		usr = &models.User{
 			Id:   userInfo.ID,
 			Name: userInfo.FirstName,
@@ -37,7 +37,7 @@ func tryShit(r users.Repository, userInfo *tgbotapi.User) string {
 	}
 
 	if usr.Hp <= 0 {
-		return "Ты не можешь срать на головы, твое hp равно 0"
+		ch <- "Ты не можешь срать на головы, твое hp равно 0"
 	}
 
 	userList, err := r.GetAll()
@@ -59,19 +59,24 @@ func tryShit(r users.Repository, userInfo *tgbotapi.User) string {
 	dmg := rand.Intn(5) + 1
 	userList[i].Hp -= dmg
 
+	err = r.Update(&userList[i])
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	hpMsg := fmt.Sprintf("Урон %d. Осталось hp: %d", dmg, userList[i].Hp)
 
-	return fmt.Sprintf("%s\n%s", msg, hpMsg)
+	ch <- fmt.Sprintf("%s\n%s", msg, hpMsg)
 }
 
-func getHp(r users.Repository) string {
+func getHp(r users.Repository, ch chan string) {
 	usrs, err := r.GetAll()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	if len(usrs) == 0 {
-		return "Users empty"
+		ch <- "Users empty"
 	}
 
 	sort.SliceStable(usrs, func(i, j int) bool {
@@ -84,5 +89,5 @@ func getHp(r users.Repository) string {
 		msg += fmt.Sprintf("%d. %s осталось hp: %d \n", i+1, u.Name, u.Hp)
 	}
 
-	return msg
+	ch <- msg
 }

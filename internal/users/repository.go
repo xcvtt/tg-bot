@@ -9,6 +9,7 @@ type Repository interface {
 	Create(u *models.User) error
 	GetById(id int64) (*models.User, error)
 	GetAll() ([]models.User, error)
+	Update(u *models.User) error
 }
 
 type repository struct {
@@ -17,6 +18,17 @@ type repository struct {
 
 func NewRepository(s *store.Store) Repository {
 	return &repository{s}
+}
+
+func (r *repository) Update(u *models.User) error {
+	stmt := "UPDATE users SET hp=$1 WHERE id=$2"
+
+	_, err := r.Store.Db.Exec(stmt, u.Hp, u.Id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *repository) Create(u *models.User) error {

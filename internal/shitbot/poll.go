@@ -11,6 +11,10 @@ const M07 = -1001552222270
 
 func PollUpdates(bot *tgbotapi.BotAPI) {
 	st := store.New()
+	err := st.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
 	repo := users.NewRepository(st)
 
 	cfg := tgbotapi.NewUpdate(0)
@@ -25,16 +29,23 @@ func PollUpdates(bot *tgbotapi.BotAPI) {
 
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 
+		ch := make(chan string)
+
 		switch update.Message.Command() {
 		case "nasrat":
-			msg.Text += tryShit(repo, update.Message.From)
+			go tryShit(repo, update.Message.From, ch)
+
 		case "hp":
-			msg.Text += getHp(repo)
+			go getHp(repo, ch)
 		default:
+			continue
 		}
 
-		if _, err := bot.Send(msg); err != nil {
-			log.Println("Gavneco chet yopta")
-		}
+		go func() {
+			msg.Text = <-ch
+			if _, err := bot.Send(msg); err != nil {
+				log.Println("Gavneco chet yopta")
+			}
+		}()
 	}
 }
