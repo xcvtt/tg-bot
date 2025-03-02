@@ -2,7 +2,9 @@ package store
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/lib/pq"
+	"os"
 )
 
 type Store struct {
@@ -14,9 +16,12 @@ func New() *Store {
 }
 
 func (s *Store) Open() error {
+	fmt.Println("POSTGRES_DB_PORT:", os.Getenv("POSTGRES_DB_PORT"))
+	fmt.Println("POSTGRES_SHITBOT:", os.Getenv("POSTGRES_SHITBOT"))
+	var connectionString = fmt.Sprintf("postgres://postgres:%s/%s?sslmode=disable&user=%s&password=%s", os.Getenv("POSTGRES_DB_PORT"), os.Getenv("POSTGRES_SHITBOT"), os.Getenv("POSTGRES_SHITBOT"), os.Getenv("POSTGRES_SHITBOT"))
 	db, err := sql.Open(
 		"postgres",
-		"postgres://localhost:5433/shitbot?sslmode=disable&user=postgres&password=123")
+		connectionString)
 	if err != nil {
 		return err
 	}

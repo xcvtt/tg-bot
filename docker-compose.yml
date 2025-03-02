@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:14.9-alpine
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_SHITBOT}
+      POSTGRES_USER: ${POSTGRES_SHITBOT}
+      POSTGRES_PASSWORD: ${POSTGRES_SHITBOT}
+    ports:
+      - "${POSTGRES_EXTERNAL_DB_PORT}:${POSTGRES_DB_PORT}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tg-bot-network
+
+  migrations:
+    image: migrate/migrate:latest
+    volumes:
+      - "./migrations:/migrations"
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    command: -source=file://migrations -database postgres://shitbot:shitbot@postgres:5432/shitbot?sslmode=disable up
+    networks:
+      - tg-bot-network
+
+
+  tg-bot:
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      - migrations
+    volumes:
+      - static_data:/app/static
+    networks:
+      - tg-bot-network
+    user: "1000:1000"
+    command: ["/app/tg-bot"]
+
+volumes:
+  postgres_data:
+  static_data:
+
+networks:
+  tg-bot-network:

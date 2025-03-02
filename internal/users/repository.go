@@ -32,7 +32,7 @@ func (r *repository) Update(u *models.User) error {
 }
 
 func (r *repository) Create(u *models.User) error {
-	stmt, err := r.Store.Db.Prepare("INSERT INTO users (id, name, hp) VALUES ($1, $2, $3)")
+	stmt, err := r.Store.Db.Prepare("INSERT INTO users (id, name, hp) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING")
 	if err != nil {
 		return err
 	}

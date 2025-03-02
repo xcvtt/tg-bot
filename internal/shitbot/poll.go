@@ -28,15 +28,17 @@ func PollUpdates(bot *tgbotapi.BotAPI) {
 		}
 
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+		msg.ParseMode = "HTML"
 
 		ch := make(chan string)
 
 		switch update.Message.Command() {
 		case "nasrat":
 			go tryShit(repo, update.Message.From, ch)
-
 		case "hp":
 			go getHp(repo, ch)
+		case "azino":
+			go rollHp(repo, update.Message.From, ch)
 		default:
 			continue
 		}

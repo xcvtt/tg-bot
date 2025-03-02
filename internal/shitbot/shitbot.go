@@ -56,7 +56,7 @@ func tryShit(r users.Repository, userInfo *tgbotapi.User, ch chan string) {
 		msg = fmt.Sprintf("%s насрал на голову %s", usr.Name, userList[i].Name)
 	}
 
-	dmg := rand.Intn(5) + 1
+	dmg := int64(rand.Intn(1300000000))
 	userList[i].Hp -= dmg
 
 	err = r.Update(&userList[i])
@@ -67,6 +67,41 @@ func tryShit(r users.Repository, userInfo *tgbotapi.User, ch chan string) {
 	hpMsg := fmt.Sprintf("Урон %d. Осталось hp: %d", dmg, userList[i].Hp)
 
 	ch <- fmt.Sprintf("%s\n%s", msg, hpMsg)
+}
+
+func rollHp(r users.Repository, userInfo *tgbotapi.User, ch chan string) {
+	usr := getUserById(r, userInfo.ID)
+
+	if usr == nil {
+		usr = &models.User{
+			Id:   userInfo.ID,
+			Name: userInfo.FirstName,
+			Hp:   100,
+		}
+
+		err := r.Create(usr)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	var msg string
+	i := rand.Intn(2)
+	hp := int64(rand.Intn(1300000000))
+
+	if i%2 == 1 {
+		msg = fmt.Sprintf("Гавно тебе на рыло. Следующая попытка через час")
+	} else {
+		usr.Hp += hp
+		msg = fmt.Sprintf("Поздравляю. Ты получил %d hp. Твое текущее hp: %d", hp, usr.Hp)
+	}
+
+	var err = r.Update(usr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ch <- msg
 }
 
 func getHp(r users.Repository, ch chan string) {

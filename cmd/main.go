@@ -1,13 +1,16 @@
 package main
 
 import (
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"os"
 	"tgbot/internal/shitbot"
 )
 
 func main() {
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("shit_bot"))
+	fmt.Println("Starting shitbot...")
+
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("SHITBOT_API"))
 	if err != nil {
 		panic(err)
 	}
