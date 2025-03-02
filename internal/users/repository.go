@@ -10,6 +10,7 @@ type Repository interface {
 	GetById(id int64) (*models.User, error)
 	GetAll() ([]models.User, error)
 	Update(u *models.User) error
+	GetAllWithHp() ([]models.User, error)
 }
 
 type repository struct {
@@ -65,6 +66,28 @@ func (r *repository) GetAll() ([]models.User, error) {
 	var users []models.User
 
 	stmt, err := r.Store.Db.Prepare("select * from users")
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := stmt.Query()
+	defer rows.Close()
+
+	for rows.Next() {
+		var u models.User
+		if err := rows.Scan(&u.Id, &u.Name, &u.Hp); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+
+	return users, nil
+}
+
+func (r *repository) GetAllWithHp() ([]models.User, error) {
+	var users []models.User
+
+	stmt, err := r.Store.Db.Prepare("select * from users where hp > 0")
 	if err != nil {
 		return nil, err
 	}

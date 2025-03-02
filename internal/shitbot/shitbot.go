@@ -40,7 +40,7 @@ func tryShit(r users.Repository, userInfo *tgbotapi.User, ch chan string) {
 		ch <- "Ты не можешь срать на головы, твое hp равно 0"
 	}
 
-	userList, err := r.GetAll()
+	userList, err := r.GetAllWithHp()
 
 	if err != nil {
 		log.Fatal(err)
@@ -56,8 +56,63 @@ func tryShit(r users.Repository, userInfo *tgbotapi.User, ch chan string) {
 		msg = fmt.Sprintf("%s насрал на голову %s", usr.Name, userList[i].Name)
 	}
 
-	dmg := int64(rand.Intn(1300000000))
+	dmg := int64(rand.Intn(30))
 	userList[i].Hp -= dmg
+	if userList[i].Hp < 0 {
+		userList[i].Hp = 0
+	}
+
+	err = r.Update(&userList[i])
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hpMsg := fmt.Sprintf("Урон %d. Осталось hp: %d", dmg, userList[i].Hp)
+
+	ch <- fmt.Sprintf("%s\n%s", msg, hpMsg)
+}
+
+func urinate(r users.Repository, userInfo *tgbotapi.User, ch chan string) {
+	usr := getUserById(r, userInfo.ID)
+
+	if usr == nil {
+		usr = &models.User{
+			Id:   userInfo.ID,
+			Name: userInfo.FirstName,
+			Hp:   100,
+		}
+
+		err := r.Create(usr)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if usr.Hp <= 0 {
+		ch <- "Ты не можешь обоссывать. У тебя 0 хп"
+	}
+
+	userList, err := r.GetAllWithHp()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	i := rand.Intn(len(userList))
+
+	var msg string
+
+	if userList[i].Id == usr.Id {
+		msg = fmt.Sprintf("%s обоссаля", usr.Name)
+	} else {
+		msg = fmt.Sprintf("%s обоссал %s", usr.Name, userList[i].Name)
+	}
+
+	dmg := int64(rand.Intn(20))
+	userList[i].Hp -= dmg
+	if userList[i].Hp < 0 {
+		userList[i].Hp = 0
+	}
 
 	err = r.Update(&userList[i])
 	if err != nil {
@@ -87,13 +142,16 @@ func rollHp(r users.Repository, userInfo *tgbotapi.User, ch chan string) {
 
 	var msg string
 	i := rand.Intn(2)
-	hp := int64(rand.Intn(1300000000))
+	hp := int64(rand.Intn(10))
 
 	if i%2 == 1 {
-		msg = fmt.Sprintf("Гавно тебе на рыло. Следующая попытка через час")
+		msg = fmt.Sprintf("Гавно тебе на рыло %s. Следующая попытка через час", usr.Name)
 	} else {
 		usr.Hp += hp
-		msg = fmt.Sprintf("Поздравляю. Ты получил %d hp. Твое текущее hp: %d", hp, usr.Hp)
+		if usr.Hp > 100 {
+			usr.Hp = 100
+		}
+		msg = fmt.Sprintf("Поздравляю %s. Ты получил %d hp. Твое текущее hp: %d", usr.Name, hp, usr.Hp)
 	}
 
 	var err = r.Update(usr)
