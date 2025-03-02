@@ -39,6 +39,8 @@ func PollUpdates(bot *tgbotapi.BotAPI) {
 			go getHp(repo, ch)
 		case "azino":
 			go rollHp(repo, update.Message.From, ch)
+		case "obossat":
+			go urinate(repo, update.Message.From, ch)
 		default:
 			continue
 		}
