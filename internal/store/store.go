@@ -16,7 +16,7 @@ func New() *Store {
 func (s *Store) Open() error {
 	db, err := sql.Open(
 		"postgres",
-		"postgres://localhost:5433/shitbot?sslmode=disable&user=postgres&password=123")
+		"postgres://localhost:65433/shitbot?sslmode=disable&user=shitbot&password=shitbot")
 	if err != nil {
 		return err
 	}
