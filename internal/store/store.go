@@ -16,8 +16,6 @@ func New() *Store {
 }
 
 func (s *Store) Open() error {
-	fmt.Println("POSTGRES_DB_PORT:", os.Getenv("POSTGRES_DB_PORT"))
-	fmt.Println("POSTGRES_SHITBOT:", os.Getenv("POSTGRES_SHITBOT"))
 	var connectionString = fmt.Sprintf("postgres://postgres:%s/%s?sslmode=disable&user=%s&password=%s", os.Getenv("POSTGRES_DB_PORT"), os.Getenv("POSTGRES_SHITBOT"), os.Getenv("POSTGRES_SHITBOT"), os.Getenv("POSTGRES_SHITBOT"))
 	db, err := sql.Open(
 		"postgres",
